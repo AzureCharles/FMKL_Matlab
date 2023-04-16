@@ -29,7 +29,7 @@ epoch=100
 
 代码仓库（Matlab）：[ericstrobl/deepMKL: Deep Multiple Kernel Learning by Span Bound (github.com)](https://github.com/ericstrobl/deepMKL)
 
-![dmkl_model](\fig\dmkl_model.png)
+![dmkl_model](/fig/dmkl_model.png)
 
 **输入**： 训练集D = {(xi, yi)|i = 1, ..., n}, $μ^1_k$为每个内核k的权重系数，层数为L，η ∈ [0..1]
 **输出**： 学习到的权重向量μ，以及SVM系数向量α。
@@ -43,7 +43,7 @@ for i ← 1 to maxIterations do
 * 更新权重向量：μi+1 = μi + η∇E；
 * 如果达到停止标准，那么断开；
 
-![image-20230416202225952](\fig\dmkl_algorithm.png)
+![image-20230416202225952](/fig/dmkl_algorithm.png)
 
 
 
