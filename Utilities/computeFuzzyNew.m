@@ -1,12 +1,12 @@
-function fms = computeFuzzyNew(trainset,delta)
+function fms = computeFuzzyNew(trainset,w,b,delta)
 
     if isempty(trainset) == 1
         disp('The input dataset is null!');
         return;
     else 
         [row1,col1] = size(trainset);
-        
-        group1 = trainset(trainset(:,col1) == -1,:);
+        %fms = zeros(row1,1);
+        group1 = trainset(trainset(:,col1) == 0,:);
         group2 = trainset(trainset(:,col1) == 1,:);
         
         row_g1 = size(group1,1);
@@ -17,7 +17,10 @@ function fms = computeFuzzyNew(trainset,delta)
         
         max_g1 = 0;
         max_g2 = 0; 
-        
+        dist=abs(w'*x+b)/sqrt(w'*w);
+        distmax=max(dist);
+        fms=dist./distmax;
+
         for i=1:1:row_g1
             if sqrt(norm(group1(i,1:col1-1) - mean_g1)) >= max_g1
                 max_g1 = sqrt(norm(group1(i,1:col1-1) - mean_g1));
@@ -30,7 +33,7 @@ function fms = computeFuzzyNew(trainset,delta)
             end
         end
         
-        fms = zeros(row1,1);
+        
         for i=1:row1
       		if trainset(i,col1) == -1
             	fms(i,1) = 1 - (sqrt(norm(trainset(i,1:col1-1) - mean_g1))/(max_g1 + delta));
