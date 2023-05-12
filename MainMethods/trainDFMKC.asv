@@ -40,46 +40,43 @@ sig = DetermineSig(dotx);
 
 % calulate
 %alternating opt
-[rowX,colX] = size(Xtrain);
+[r,~] = size(Xtrain);
 span = 0;
 for t=1:maxIteration
     
     %kernels
     [K,Kf] = computeKernels(dotx,sig,betas,nLayers);
     
-    % w=betas;
+    w=betas;
     
-    
-    Ks = reshape(Kf(:,nLayers),rowX,rowX);
+    %train SVM
+    Ks = reshape(Kf(:,nLayers),r,r);
     if fmsMode=="CMD"
         fmst = computeFuzzyMembership(Ks,delta);
         % CMD方法
     elseif fmsMode=="SHD"
         fmst = computeFuzzyNew(Ks,delta); 
         % SHD方法
-    else
-        disp('This fuzzy mode is not supported!')
     end
-    % train SVM
-    model = svmtrain(y, [(1:rowX)',[Ks fmst]], '-c C*fmst -t 4 -q 1');
+    model = svmtrain(y, [(1:r)',[Ks fmst]], '-c C*fmst -t 4 -q 1');
 
     %span gradient
-    if nLayers==1
+    if nLayers==1,
         [betas,spanT] = grad1Layer(model,betas,LearningRate,Kf,K,y);
-    elseif nLayers==2
+    elseif nLayers==2,
         [betas,spanT] = grad2Layer(model,betas,LearningRate,Kf,K,sig,y);
-    elseif nLayers==3
+    elseif nLayers==3,
         [betas,spanT] = grad3Layer(model,betas,LearningRate,Kf,K,sig,y);
     end
 
     %feasible region projection
     betas(find(betas<0))=0; %non-negative
-    if sum(betas(end,:))>1
+    if sum(betas(end,:))>1,
         betas(end,:) = betas(end,:)./sum(betas(end,:)); %trace final layer upper bound
     end
     
     %stopping conditions
-    if isnan(sum(betas))
+    if isnan(sum(betas)),
         error('myApp:argChk', 'Learning rate is too high');
     elseif abs(span-spanT)<1E-4 && t>5,
         break;
@@ -92,7 +89,7 @@ end
 net.w = betas;
 net.sig = sig;
 net.nLayers = nLayers;
-net.n = rowX;
+net.n = r;
 
 
 

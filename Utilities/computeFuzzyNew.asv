@@ -3,7 +3,7 @@
 % distmax = max(dist);
 % fms = dist./distmax;
 
-function fms = computeFuzzyNew(trainSetKernel,w,b)
+function fms = computeFuzzyNew(trainSetKernel,w,b,delta)
     eta = 1e-3; % eta=0.001
     if isempty(trainSetKernel) == 1
         disp('The input dataset is null!');
@@ -19,18 +19,20 @@ function fms = computeFuzzyNew(trainSetKernel,w,b)
         class1Num = size(group1,1);
         class1NumEx = size(group1Ex,1);
         % 将训练集分为最小标签类，和非最小标签类；
-        % 对于二分类问题，group1Ex等效于第二类别。
+        % 对于二分类问题，group2等效于第二类别。
         dist1 = abs(w'*group1+b.*ones(class1Num,1))/sqrt(norm(w));
         dist2 = abs(w'*group1Ex+b.*ones(class1NumEx,1))/sqrt(norm(w));
         
         maxDist1 = max(dist1);
         maxDist2 = max(dist2); 
         
+
+        
         for i=1:row1
             if trainSetKernel(i,col1) == labels(1)
-            	fms(i,1) = dist1(i)/(maxDist1 + eta);
+            	fms(i,1) = 1 - (sqrt(norm(trainSetKernel(i,1:col1-1) - mean_g1))/(maxDist1 + eta));
             else
-            	fms(i,1) = dist2(i)/(maxDist2 + eta);
+            	fms(i,1) = 1 - (sqrt(norm(trainSetKernel(j,1:col1-1) - mean_g2))/(maxDist2 + eta));
             end
         end
     end
