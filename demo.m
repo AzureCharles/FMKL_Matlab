@@ -4,6 +4,7 @@ X_train=csvread('PCAProjectedTrainData800.csv',1,0);
 y_train=csvread('trainLabels.csv',1,0);
 X_test=csvread('PCAProjectedTestData800.csv',1,0);
 y_test=csvread('testLabels.csv',1,0);
+
 C=100;
 fuzzyMode = 'CMD';
 % C = 10;
@@ -44,12 +45,13 @@ Cf = C*fmst;
 % 
 % 这些只是一部分常用参数的示例，libsvm还有其他参数，如缓存大小、收敛容忍度等。你可以参考libsvm的文档或帮助文件，了解更多参数及其设置方法。在实际使用中，你可以根据数据集和问题需求进行参数调优，通过交叉验证等方法选择最佳的参数组合。
 
-cmd=['-c',Cf,'-t',4,'-q',1];
+cmd=['-c ' num2str(C) ' -t 4 -q 1'];
 % 错误使用 horzcat
 % 要串联的数组的维度不一致。
 model = svmtrain(y_train, [(1:rowX)',[Ks fmst]], cmd);
 %mode = ('-c 100 -t 3 -q 1');
 %model = svmtrain(y_train, X_train, mode);
+
 [y_pred,acc,proba] = svmpredict(y_test,X_test,model);
 
 [cm,precision,recall,f1_score]=getF1Score(y_test,y_pred);
