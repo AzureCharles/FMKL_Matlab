@@ -1,12 +1,55 @@
 % Dorothea classification via SVC Matlab
+% load the data
 X_train=csvread('PCAProjectedTrainData800.csv',1,0);
 y_train=csvread('trainLabels.csv',1,0);
 X_test=csvread('PCAProjectedTestData800.csv',1,0);
 y_test=csvread('testLabels.csv',1,0);
 C=100;
-% load the data
-mode = ('-c 100 -t 3 -q 1');
-model = svmtrain(y_train, X_train, mode);
+fuzzyMode = 'CMD';
+% C = 10;
+MAX_ITER = 100;
+nLayers=3;
+%initialize weights
+betas = ones(nLayers,4)./4;
+
+%initialize kernels
+dotx = X_train*X_train';
+sig = DetermineSig(dotx);
+[~,Kf] = computeKernels(dotx,sig,betas,nLayers);
+
+% calulate
+% alternating opt
+[rowX,colX] = size(X_train);
+span = 0;
+delta = 0.05;
+[K,Kf] = computeKernels(dotx,sig,betas,nLayers);
+    
+    % w=betas;
+Ks = reshape(Kf(:,nLayers),rowX,rowX);
+
+fmst = computeFuzzyMembership(Ks,y_train,delta);
+Cf = C*fmst;
+
+% libsvm具有许多参数，可以用来控制模型的训练和预测过程。下面是一些常用的参数及其设置方法：
+% 
+% 1. `-s`（默认值为0）：用于设置SVM的类型。常用的取值有0（C-SVC）、1（nu-SVC）、2（one-class SVM）和3（epsilon-SVR）。根据你的问题类型选择适当的类型。
+% 
+% 2. `-t`（默认值为2）：用于设置内核函数的类型。常用的取值有0（线性核）、1（多项式核）、2（RBF核）和3（sigmoid核）。选择适合你的数据的内核类型。
+% 
+% 3. `-c`（默认值为1）：用于设置C-SVC、epsilon-SVR和nu-SVR的惩罚参数C。C的值越大，表示对误分类的惩罚越大。
+% 
+% 4. `-g`（默认值为1/特征数量）：用于设置RBF内核的宽度参数gamma。较小的gamma值会产生较宽的决策边界，较大的gamma值会产生较窄的决策边界。
+% 
+% 5. `-n`（默认值为0.5）：用于设置nu-SVC、one-class SVM和nu-SVR的参数nu。nu的值应在0到1之间，控制支持向量的比例。
+% 
+% 这些只是一部分常用参数的示例，libsvm还有其他参数，如缓存大小、收敛容忍度等。你可以参考libsvm的文档或帮助文件，了解更多参数及其设置方法。在实际使用中，你可以根据数据集和问题需求进行参数调优，通过交叉验证等方法选择最佳的参数组合。
+
+cmd=['-c',Cf,'-t',4,'-q',1];
+% 错误使用 horzcat
+% 要串联的数组的维度不一致。
+model = svmtrain(y_train, [(1:rowX)',[Ks fmst]], cmd);
+%mode = ('-c 100 -t 3 -q 1');
+%model = svmtrain(y_train, X_train, mode);
 [y_pred,acc,proba] = svmpredict(y_test,X_test,model);
 
 [cm,precision,recall,f1_score]=getF1Score(y_test,y_pred);

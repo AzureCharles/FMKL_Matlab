@@ -4,9 +4,9 @@
 %**********************************************************************************************************%
 
 %---------------------------computeFuzzynumber------------------------------*/
-function fms = computeFuzzyMembership(trainset,delta)
+function fms = computeFuzzyMembership(kernel,label,delta)
     eta = 1e-3; % eta=0.001
-    
+    trainset=[kernel label];
     if isempty(trainset) == 1
         disp('The input dataset is null!');
         return;
@@ -47,23 +47,22 @@ function fms = computeFuzzyMembership(trainset,delta)
         % exp(-kt)=1-t/(max_g+eta),t=delta
         % k=-log(1-delta/(max_g+eta))/delta
         
-        for i=1:row1
+        for i=1:row_g1
             if sqrt(norm(group1(i,1:col1-1) - mean_g1)) <= delta
-                if trainset(i,col1) == labels(1)
-        	        fms(i,1) = 1 - (sqrt(norm(trainset(i,1:col1-1) - mean_g1))/(max_g1 + eta));
-                else
-        	        fms(i,1) = 1 - (sqrt(norm(trainset(j,1:col1-1) - mean_g2))/(max_g2 + eta));
-                end
+        	    fms(i,1) = 1 - (sqrt(norm(trainset(i,1:col1-1) - mean_g1))/(max_g1 + eta));
+   
             else 
                 % 范数大于阈值delta时，使用exp(-kt)
-                if trainset(i,col1) == labels(1)
-                    k = log(1-delta/(max_g1+eta))/delta;
-        	        fms(i,1) = exp(k*sqrt(norm(trainset(i,1:col1-1) - mean_g1)));
-                else
-                    k = log(1-delta/(max_g2+eta))/delta;
-        	        fms(i,1) = exp(k*sqrt(norm(trainset(j,1:col1-1) - mean_g2)));
-                end
+                k = log(1-delta/(max_g1+eta))/delta;
+    	        fms(i,1) = exp(k*sqrt(norm(trainset(i,1:col1-1) - mean_g1)));
             end
         end
-        
+        for j=1:row_g2
+            if sqrt(norm(group2(j,1:col1-1) - mean_g2)) <= delta
+                fms(j+row_g1,1) = 1 - (sqrt(norm(trainset(j,1:col1-1) - mean_g2))/(max_g2 + eta));
+            else
+                k = log(1-delta/(max_g2+eta))/delta;
+        	    fms(j+row_g1,1) = exp(k*sqrt(norm(trainset(j,1:col1-1) - mean_g2)));
+            end
+        end
     end

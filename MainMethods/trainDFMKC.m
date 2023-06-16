@@ -9,12 +9,12 @@
 % /*--------------sum(lamdai*yi)=0--------------------------------------------------------*/
 % /*--------------0 =< lamdai <= si*C-----------------------------------------------------*/
 % /*--------------------------------------------------------------------------------------*/
-function [model,net] = trainDFMKC(Xtrain,y,nLayers,fmsMode,learningRate,maxIteration,C)
+function [model,net] = trainDFMKC(Xtrain,ytrain,nLayers,fmsMode,learningRate,maxIteration,C)
 % Deep Fuzzy Multiple Kernel Learning by Span Bound
 % 
 % Inputs:
-% (1) x = trainng data matrix, where rows are instances and columns are features
-% (2) y = training target vector, where rows are instances
+% (1) Xtrain = trainng data matrix, where rows are instances and columns are features
+% (2) ytrain = training target vector, where rows are instances
 % (3) nLayers = number of layers, 1, 2 or 3
 % (4) LR = learning rate (default=1E-4)
 % (5) maxI = maximum number of iterations (default=100)
@@ -26,9 +26,9 @@ function [model,net] = trainDFMKC(Xtrain,y,nLayers,fmsMode,learningRate,maxItera
 % (2) net = net parameters
 
 %default values
-SetDefaultValue(4,'learningRate',1E-4);
-SetDefaultValue(5,'maxIteration',100);
-SetDefaultValue(6,'C',10);
+% SetDefaultValue(4,'learningRate',1E-4);
+% SetDefaultValue(5,'maxIteration',100);
+% SetDefaultValue(6,'C',10);
 
 %initialize weights
 betas = ones(nLayers,4)./4;
@@ -42,6 +42,7 @@ sig = DetermineSig(dotx);
 %alternating opt
 [rowX,colX] = size(Xtrain);
 span = 0;
+delta = 0.05;
 for t=1:maxIteration
     
     %kernels
@@ -52,7 +53,7 @@ for t=1:maxIteration
     
     Ks = reshape(Kf(:,nLayers),rowX,rowX);
     if fmsMode=="CMD"
-        fmst = computeFuzzyMembership(Ks,delta);
+        fmst = computeFuzzyMembership(Ks,ytrain,delta);
         % CMD方法
     elseif fmsMode=="SHD"
         fmst = computeFuzzyNew(Ks,delta); 
@@ -61,15 +62,15 @@ for t=1:maxIteration
         disp('This fuzzy mode is not supported!')
     end
     % train SVM
-    model = svmtrain(y, [(1:rowX)',[Ks fmst]], '-c C*fmst -t 4 -q 1');
+    model = svmtrain(ytrain, [(1:rowX)',[Ks fmst]], '-c C*fmst -t 4 -q 1');
 
     %span gradient
     if nLayers==1
-        [betas,spanT] = grad1Layer(model,betas,LearningRate,Kf,K,y);
+        [betas,spanT] = grad1Layer(model,betas,learningRate,Kf,K,ytrain);
     elseif nLayers==2
-        [betas,spanT] = grad2Layer(model,betas,LearningRate,Kf,K,sig,y);
+        [betas,spanT] = grad2Layer(model,betas,learningRate,Kf,K,sig,ytrain);
     elseif nLayers==3
-        [betas,spanT] = grad3Layer(model,betas,LearningRate,Kf,K,sig,y);
+        [betas,spanT] = grad3Layer(model,betas,learningRate,Kf,K,sig,ytrain);
     end
 
     %feasible region projection
@@ -81,7 +82,7 @@ for t=1:maxIteration
     %stopping conditions
     if isnan(sum(betas))
         error('myApp:argChk', 'Learning rate is too high');
-    elseif abs(span-spanT)<1E-4 && t>5,
+    elseif abs(span-spanT)<1E-4 && t>5
         break;
     end
     span=spanT;

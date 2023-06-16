@@ -23,21 +23,21 @@ indices = crossvalind('Kfold',tr_row, 5);
 % [...] = crossvalind(Method, Group, ...)
 % [...] = crossvalind(Method, Group, ..., 'Classes', C)
 % [...] = crossvalind(Method, Group, ..., 'Min', MinValue)
-fuzzyMode = 'CMD';
-C = 10;
-MAX_ITER = 100;
+
+C = 1000;
+gausskp = 10;
 
 %one layer
-[model,net] = trainDFMKC(traindata,trainlabels,1,fuzzyMode,1E-5,MAX_ITER,C);
-[pred,acc,cm,precision,recall,f1_score] = testDFMKC([traindata;testdata],testlabels,model,net);
+[model,net] = trainDFMKC(traindata,trainlabels,1,1E-4);
+[pred,acc,cm,precision,recall,f1_score] = testDFMKC([x;Xtest],testlabels,model,net);
 
 %two layer
-[model,net] = trainDFMKC(traindata,trainlabels,2,fuzzyMode,1E-5,MAX_ITER,C);
-[pred,acc,cm,precision,recall,f1_score] = testDFMKC([traindata;testdata],testlabels,model,net);
+[model,net] = trainDFMKC(traindata,trainlabels,2,1E-5);
+[pred,acc,cm,precision,recall,f1_score] = testDFMKC([x;Xtest],testlabels,model,net);
 
 %three layer
-[model,net] = trainDFMKC(traindata,trainlabels,3,fuzzyMode,1E-5,MAX_ITER,C);
-[pred,acc,cm,precision,recall,f1_score] = testDFMKC([traindata;testdata],testlabels,model,net);
+[model,net] = trainDFMKC(traindata,trainlabels,3,1E-5);
+[pred,acc,cm,precision,recall,f1_score] = testDFMKC([x;Xtest],testlabels,model,net);
 
 % outputtable(1,:) = {'model','totalg','totalb','gtog','gtob','btob','btog','gerro','berror','totalerror','accuracy','precision','recall','sensitivity','specificity','Fmeasure','correlation','ksscore','giniindex'};
 % 
